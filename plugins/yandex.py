@@ -19,7 +19,7 @@ def translate(translate_from, translate_to, string_to_translate=""):
     try:
         result = response.json()
     except ValueError:
-        print("Yandex: service request error: invalid response")
+        print("Yandex: service request error: failed to decode json")
         return
 
     if str(result['code']) == '200':

@@ -19,7 +19,7 @@ def translate(translate_from, translate_to, text_to_translate=""):
     try:
         result = response.json()
     except ValueError:
-        print("Yandex: service request error: invalid response")
+        print("Google: service request error: failed to decode json")
         return
 
     if 'error' in result:
