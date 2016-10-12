@@ -1,5 +1,4 @@
 import codecs
-import time
 
 import requests
 
