@@ -1,0 +1,2 @@
+pluginbase==0.4
+requests==2.11.1
