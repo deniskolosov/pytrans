@@ -18,11 +18,11 @@ plugin_list = plugin_source.list_plugins()
 
 parser = argparse.ArgumentParser(description="Translator app with plugins.")
 
-parser.add_argument("text_to_translate", help="Some text to translate (don't forget to quote it)")
-parser.add_argument("plugin_name", help="Name of translation plugin", choices=plugin_list, nargs='?', type=str)
-parser.add_argument("--verbose", help="Displays results from all plugins.")
+parser.add_argument("--verbose", help="Displays results from all plugins.", action="store_true")
 parser.add_argument("--from", dest="translate_from", help="Language to translate from", default='en')
 parser.add_argument("--to", dest="translate_to", help="Language to translate to", default='ru')
+parser.add_argument("text_to_translate", help="Some text to translate (don't forget to quote it)")
+parser.add_argument("plugin_name", help="Name of translation plugin", choices=plugin_list, nargs='?', type=str)
 
 
 def load_and_validate_plugin(plugin_name):
@@ -41,25 +41,28 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     thread_list = []
+
     if not plugin_list:
         print("Please, provide some plugins")
         sys.exit(0)
 
-    if args.plugin_name:
-        plugin = load_and_validate_plugin(args.plugin_name)
+    plugin_name = args.plugin_name if args.plugin_name else plugin_list[0]
+
+    if plugin_name and not args.verbose:
+        plugin = load_and_validate_plugin(plugin_name)
         if plugin:
             plugin.translate(args.translate_from, args.translate_to, args.text_to_translate)
-        sys.exit(0)
 
-    for plugin_name in plugin_list:
-        plugin = load_and_validate_plugin(plugin_name)
+    else:
+        for name in plugin_list:
+            plugin = load_and_validate_plugin(name)
 
-        if not plugin:
-            continue
+            if not plugin:
+                continue
 
-        t = Thread(target=plugin.translate, args=(args.translate_from, args.translate_to, args.text_to_translate,))
-        t.start()
-        thread_list.append(t)
+            t = Thread(target=plugin.translate, args=(args.translate_from, args.translate_to, args.text_to_translate,))
+            t.start()
+            thread_list.append(t)
 
-    for t in thread_list:
-        t.join()
+        for t in thread_list:
+            t.join()
