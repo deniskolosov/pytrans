@@ -1,4 +1,5 @@
 import codecs
+import time
 
 import requests
 
@@ -10,6 +11,13 @@ API_KEY = codecs.decode('NVmnFlQf16xpQ_M3QD9XuoHBoeJoFEZ3_SNOEBZ',
 
 
 def translate(translate_from, translate_to, text_to_translate=""):
+    """
+    Translate plugin which uses Google Translate API for translation.
+    :param translate_from: language to translate from
+    :param translate_to:  language to translate to
+    :param text_to_translate: text to translate
+    :return:
+    """
     params = {'key': API_KEY,
               'q': text_to_translate,
               'source': translate_from,

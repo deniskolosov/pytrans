@@ -1,8 +1,10 @@
 import argparse
+import inspect
 import os
-import sys
 from functools import partial
+from threading import Thread
 
+import sys
 from pluginbase import PluginBase
 
 
@@ -12,21 +14,52 @@ get_path = partial(os.path.join, here)
 
 plugin_base = PluginBase(package='translate.plugins')
 plugin_source = plugin_base.make_plugin_source(searchpath=[get_path('./plugins')])
+plugin_list = plugin_source.list_plugins()
 
 parser = argparse.ArgumentParser(description="Translator app with plugins.")
 
 parser.add_argument("text_to_translate", help="Some text to translate (don't forget to quote it)")
-parser.add_argument("--from", dest="translate_from", help="Language to translate from")
-parser.add_argument("--to", dest="translate_to", help="Language to translate to")
+parser.add_argument("plugin_name", help="Name of translation plugin", choices=plugin_list, nargs='?', type=str)
+parser.add_argument("--verbose", help="Displays results from all plugins.")
+parser.add_argument("--from", dest="translate_from", help="Language to translate from", default='en')
+parser.add_argument("--to", dest="translate_to", help="Language to translate to", default='ru')
+
+
+def load_and_validate_plugin(plugin_name):
+    plugin = plugin_source.load_plugin(plugin_name)
+
+    # check if plugin has 'translate' function and it accepts 3 arguments
+    has_translate = any([name == 'translate' for name, obj in inspect.getmembers(plugin, inspect.isfunction)])
+    if not has_translate or len(inspect.signature(plugin.translate).parameters) != 3:
+        print("Plugin error: '%s' doesn't have function translate or it doesn't accept 3 arguments needed"
+              % plugin_name)
+        return None
+    return plugin
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    for plugin_name in plugin_source.list_plugins():
-        plugin = plugin_source.load_plugin(plugin_name)
+    thread_list = []
+    if not plugin_list:
+        print("Please, provide some plugins")
+        sys.exit(0)
 
-        try:
+    if args.plugin_name:
+        plugin = load_and_validate_plugin(args.plugin_name)
+        if plugin:
             plugin.translate(args.translate_from, args.translate_to, args.text_to_translate)
-        except AttributeError:
-            print("%s: error — plugin does not have 'translate' function defined!" % plugin_name)
+        sys.exit(0)
+
+    for plugin_name in plugin_list:
+        plugin = load_and_validate_plugin(plugin_name)
+
+        if not plugin:
+            continue
+
+        t = Thread(target=plugin.translate, args=(args.translate_from, args.translate_to, args.text_to_translate,))
+        t.start()
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.join()
