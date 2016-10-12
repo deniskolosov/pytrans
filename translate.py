@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from functools import partial
 
 from pluginbase import PluginBase
@@ -24,4 +25,8 @@ if __name__ == "__main__":
 
     for plugin_name in plugin_source.list_plugins():
         plugin = plugin_source.load_plugin(plugin_name)
-        plugin.translate(args.translate_from, args.translate_to, args.text_to_translate)
+
+        try:
+            plugin.translate(args.translate_from, args.translate_to, args.text_to_translate)
+        except AttributeError:
+            print("%s: error — plugin does not have 'translate' function defined!" % plugin_name)
