@@ -16,7 +16,6 @@ def translate(translate_from, translate_to, text_to_translate=""):
     :param translate_from: language to translate from
     :param translate_to:  language to translate to
     :param text_to_translate: text to translate
-    :return:
     """
     params = {'key': API_KEY,
               'q': text_to_translate,

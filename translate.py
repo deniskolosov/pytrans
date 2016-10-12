@@ -26,6 +26,11 @@ parser.add_argument("plugin_name", help="Name of translation plugin", choices=pl
 
 
 def load_and_validate_plugin(plugin_name):
+    """
+    Validate and load plug from plugin source.
+    :param plugin_name: name of plugin to load
+    :return: valid plugin object or None
+    """
     plugin = plugin_source.load_plugin(plugin_name)
 
     # check if plugin has 'translate' function and it accepts 3 arguments
